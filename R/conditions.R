@@ -135,7 +135,7 @@ as_jwc_date <- function(x) .jwc_as_date(x)
   year_start <- 365 * y0 + floor(y0 / 4) - floor(y0 / 100) + floor(y0 / 400) + 1
   doy <- rd - year_start + 1
   starts <- c(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
-  month_index <- findInterval(doy - 1 - as.integer(leap & doy > 60), starts)
+  month_index <- findInterval(doy - 1 - as.integer(leap & doy >= 60), starts)
   month <- month_index
   day <- doy - starts[month] - as.integer(leap & month > 2)
   year[missing] <- month[missing] <- day[missing] <- NA_real_
