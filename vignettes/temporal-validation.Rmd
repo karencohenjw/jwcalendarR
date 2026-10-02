@@ -11,6 +11,10 @@ Boundary flags and drift summaries make date changes reviewable. These
 functions compare civil-date values; they do not infer time zones or parse
 ambiguous timestamps.
 
+```{r setup, include=FALSE}
+library(jwcalendarR)
+```
+
 ```{r}
 boundary_scan("2024-02-25", "2024-03-03")
 date_drift("2024-02-28", "2024-02-29")
