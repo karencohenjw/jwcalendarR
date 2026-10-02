@@ -31,8 +31,10 @@ test_that("Julian conversions round-trip and JDN reference is correct", {
   x <- as_jwc_date(c("1582-10-15", "2000-01-01", "2024-03-01"))
   expect_equal(julian_day_number("2000-01-01"), 2451545L)
   expect_equal(gregorian_to_julian(x), list(year = c(1582L, 1999L, 2024L), month = c(10L, 12L, 2L), day = c(5L, 19L, 17L)))
-  expect_equal(gregorian_to_julian(civil_date(2000, 3, 14)),
-               list(year = 2000L, month = 3L, day = 1L))
+  leap_transition <- civil_date(2000, 3, 13:15)
+  expect_equal(gregorian_to_julian(leap_transition),
+               list(year = rep(2000L, 3), month = c(2L, 3L, 3L), day = c(29L, 1L, 2L)))
+  expect_identical(julian_to_gregorian(gregorian_to_julian(leap_transition)), leap_transition)
   expect_identical(julian_to_gregorian(gregorian_to_julian(x)), x)
 })
 
