@@ -1,6 +1,12 @@
 # Deterministic full-cycle validation. Run with Rscript tools/validate-heavy.R.
 started <- Sys.time()
 library(jwcalendarR)
+.cycle_check <- function(year, stage, code) {
+  tryCatch(force(code), error = function(e) {
+    stop(sprintf("400-year validation failed for %d at %s: %s",
+                 year, stage, conditionMessage(e)), call. = FALSE)
+  })
+}
 total_days <- 0L
 leap_years <- 0L
 for (y in 2000:2399) {
@@ -8,16 +14,22 @@ for (y in 2000:2399) {
   for (month in 1:12) {
     expected_length <- c(31L, if (is_leap_year(y)) 29L else 28L, 31L, 30L,
                          31L, 30L, 31L, 31L, 30L, 31L, 30L, 31L)[month]
-    stopifnot(days_in_month(y, month) == expected_length)
+    .cycle_check(y, sprintf("month length %02d", month),
+                 stopifnot(days_in_month(y, month) == expected_length))
   }
-  dates <- add_days(civil_date(y, 1, 1), 0:(if (is_leap_year(y)) 365L else 364L))
+  dates <- .cycle_check(y, "constructing year dates",
+                        add_days(civil_date(y, 1, 1), 0:(if (is_leap_year(y)) 365L else 364L)))
   total_days <- total_days + length(dates)
-  stopifnot(all(as.character(as_jwc_date(as.character(dates))) == as.character(dates)))
-  stopifnot(all(as.character(julian_to_gregorian(gregorian_to_julian(dates))) == as.character(dates)))
-  stopifnot(all(as.character(from_iso_week_date(iso_week_year(dates), iso_week(dates)$week, weekday(dates))) == as.character(dates)))
+  .cycle_check(y, "strict date round-trip",
+               stopifnot(all(as.character(as_jwc_date(as.character(dates))) == as.character(dates))))
+  .cycle_check(y, "Gregorian-Julian round-trip",
+               stopifnot(all(as.character(julian_to_gregorian(gregorian_to_julian(dates))) == as.character(dates))))
+  .cycle_check(y, "ISO week-date round-trip",
+               stopifnot(all(as.character(from_iso_week_date(iso_week_year(dates), iso_week(dates)$week, weekday(dates))) == as.character(dates))))
   if (y < 2399L) {
-    stopifnot(as.character(add_days(tail(dates, 1L), 1L)) ==
-              as.character(civil_date(y + 1L, 1L, 1L)))
+    .cycle_check(y, "year-end increment",
+                 stopifnot(as.character(add_days(tail(dates, 1L), 1L)) ==
+                           as.character(civil_date(y + 1L, 1L, 1L))))
   }
 }
 stopifnot(total_days == 146097L, leap_years == 97L)
