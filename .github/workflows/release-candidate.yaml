@@ -1,0 +1,112 @@
+name: Release candidate checks
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: check
+      - name: Build source package
+        run: R CMD build .
+      - name: Enforce candidate archive name
+        run: test -f jwcalendarR_0.1.0.tar.gz
+      - name: Record source archive checksum
+        shell: bash
+        run: shasum -a 256 jwcalendarR_0.1.0.tar.gz | tee jwcalendarR-source-sha256.txt
+      - name: Install exact archive and run full-cycle validation
+        shell: bash
+        run: |
+          R CMD INSTALL jwcalendarR_0.1.0.tar.gz
+          Rscript tools/validate-heavy.R
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 400-year-validation-evidence
+          path: docs/400-YEAR-VALIDATION.md
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-source-tarball
+          path: |
+            jwcalendarR_0.1.0.tar.gz
+            jwcalendarR-source-sha256.txt
+          if-no-files-found: error
+
+  check-tarball:
+    needs: build-tarball
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, r: release, id: linux-release }
+          - { os: ubuntu-latest, r: devel, id: linux-devel }
+          - { os: ubuntu-latest, r: oldrel-1, id: linux-oldrel }
+          - { os: windows-latest, r: release, id: windows-release }
+          - { os: macos-latest, r: release, id: macos-release }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r }}
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: check
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-source-tarball
+          path: release
+      - name: Check the exact shared source tarball
+        shell: bash
+        run: |
+          package_tarball=release/jwcalendarR_0.1.0.tar.gz
+          test -f "$package_tarball"
+          mkdir check-output
+          R CMD check --as-cran --no-manual --output=check-output "$package_tarball" 2>&1 | tee check-output/command.log
+          result=${PIPESTATUS[0]}
+          test "$result" -eq 0
+          grep -F 'Status: OK' check-output/jwcalendarR.Rcheck/00check.log
+      - name: Upload full check log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-${{ matrix.id }}
+          path: check-output
+          if-no-files-found: warn
+
+  name-availability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - name: Install Bioconductor metadata helper
+        run: Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")'
+      - name: Check active and archived package names
+        run: Rscript tools/check-name-availability.R
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: name-availability-evidence
+          path: docs/NAME-AVAILABILITY.md
+          if-no-files-found: warn
