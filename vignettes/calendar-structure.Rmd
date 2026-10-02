@@ -11,6 +11,10 @@ Natural-month grids describe structure without choosing a graphics system.
 Signatures include the month layout and week-start convention. A year
 signature is the ordered set of its twelve month signatures.
 
+```{r setup, include=FALSE}
+library(jwcalendarR)
+```
+
 ```{r}
 calendar_grid(2027, 1, week_start = 1)
 calendar_equivalent(2015, 2026)
