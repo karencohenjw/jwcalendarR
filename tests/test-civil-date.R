@@ -1,0 +1,78 @@
+test_that("civil dates validate and round-trip without timestamps", {
+  x <- civil_date(c(1, 1900, 2000, 2024, 9999), c(1, 3, 2, 2, 12), c(1, 1, 29, 29, 31))
+  expect_identical(as.character(x), c("0001-01-01", "1900-03-01", "2000-02-29", "2024-02-29", "9999-12-31"))
+  expect_identical(as_jwc_date(as.character(x)), x)
+  expect_error(civil_date(1900, 2, 29), class = "jwcalendar_invalid_date")
+  expect_error(civil_date(2024, 4, 31), class = "jwcalendar_invalid_date")
+  expect_equal(absolute_day(civil_date(1, 1, 1)), 1L)
+  expect_equal(weekday(civil_date(1, 1, 1)), 1L)
+})
+
+test_that("Gregorian arithmetic and ISO coordinates cross year boundaries", {
+  expect_equal(as.character(add_days("2024-02-28", 1:2)), c("2024-02-29", "2024-03-01"))
+  expect_error(add_months("2024-01-31", 1), class = "jwcalendar_invalid_date")
+  expect_equal(as.character(add_months("2024-01-31", 1, "previous-valid")), "2024-02-29")
+  expect_equal(difference_days("2024-03-01", "2024-02-28"), 2L)
+  expect_equal(iso_week("2021-01-01"), list(year = 2020L, week = 53L, weekday = 5L))
+  expect_equal(as.character(from_iso_week_date(2020, 53, 5)), "2021-01-01")
+  expect_error(from_iso_week_date(2021, 53, 1), class = "jwcalendar_invalid_date")
+  expect_equal(as.character(from_ordinal_date(2024, 60)), "2024-02-29")
+  difficult <- as_jwc_date(c("2015-12-31", "2016-01-01", "2020-12-31", "2021-01-01",
+    "2026-12-31", "2027-01-01", "2027-01-04", "2028-01-01"))
+  iso <- iso_week(difficult)
+  expect_equal(iso$year, c(2015L, 2015L, 2020L, 2020L, 2026L, 2026L, 2027L, 2027L))
+  expect_equal(iso$week, c(53L, 53L, 53L, 53L, 53L, 53L, 1L, 52L))
+  expect_equal(iso_week("9999-12-31")$year, 10000L)
+  expect_equal(as.character(from_iso_week_date(10000, 1, 1)), "9999-12-31")
+  expect_error(from_iso_week_date(10000, 1, 2), class = "jwcalendar_domain_error")
+})
+
+test_that("Julian conversions round-trip and JDN reference is correct", {
+  x <- as_jwc_date(c("1582-10-15", "2000-01-01", "2024-03-01"))
+  expect_equal(julian_day_number("2000-01-01"), 2451545L)
+  expect_equal(gregorian_to_julian(x), list(year = c(1582L, 1999L, 2024L), month = c(10L, 12L, 2L), day = c(5L, 19L, 17L)))
+  expect_identical(julian_to_gregorian(gregorian_to_julian(x)), x)
+})
+
+test_that("structural year equivalence and natural grids are stable", {
+  expect_true(calendar_equivalent(2015, 2026))
+  expect_equal(dim(calendar_grid(2021, 2, rows = "6")), c(6L, 7L))
+  expect_equal(length(calendar_signature(2024)$month_grids), 12L)
+})
+
+test_that("finite rule compiler and set operations agree", {
+  weekdays <- compile_calendar(on_weekday(1:5), "2024-02-01", "2024-02-29")
+  expect_equal(calendar_count(weekdays), 21L)
+  firsts <- compile_calendar(on_month_day(1), "2024-01-01", "2024-03-31")
+  expect_equal(as.character(firsts$dates), c("2024-01-01", "2024-02-01", "2024-03-01"))
+  expect_equal(calendar_count(calendar_intersection(weekdays, firsts)), 3L)
+  expect_true(calendar_contains(weekdays, "2024-02-29"))
+  expect_false(calendar_contains(weekdays, "2024-02-25"))
+  conflict <- compile_calendar(rule_and(on_weekday("monday"), on_weekday("tuesday")), "2024-01-01", "2024-12-31")
+  expect_equal(calendar_count(conflict), 0L)
+  expect_true(calendar_equivalent(2027, 2027, structure = "print-layout"))
+  expect_length(calendar_diff(2027, 2028)$month_start_weekday_differences, 12L)
+  expect_true(all(calendar_test_vectors(2000, cases = "iso-week")$iso_week >= 1L))
+})
+
+test_that("boundary and drift explanations expose date shifts", {
+  d <- date_drift("2024-02-28", "2024-02-29")
+  expect_equal(d$offset_days, 1L)
+  b <- boundary_cases(c("2024-02-29", "2024-12-31"))
+  expect_true(b$leap_day[1])
+  expect_true(b$year_end[2])
+  expect_equal(nrow(calendar_test_vectors(2000, cases = "leap")), 3L)
+  expect_equal(nrow(boundary_cases(2024)), 5L)
+  grid <- calendar_grid(2027, 1, week_start = "sunday", rows = 6, adjacent = TRUE, iso_week_labels = TRUE)
+  expect_equal(nrow(grid), 42L)
+  expect_true(all(c("iso_year", "iso_week") %in% names(grid)))
+})
+
+test_that("deterministic sample round trips hold", {
+  x <- as_jwc_date(c("0001-01-01", "0004-02-29", "1582-10-15", "1900-03-01", "2000-02-29", "9999-12-31"))
+  expect_identical(as_jwc_date(as.character(x)), x)
+  expect_identical(add_days(add_days(x, 17), -17), x)
+  expect_identical(julian_to_gregorian(gregorian_to_julian(x)), x)
+  expect_identical(from_ordinal_date(ordinal_date(x)$year, ordinal_date(x)$day), x)
+  expect_identical(from_iso_week_date(iso_week_year(x), iso_week(x)$week, iso_weekday(x)), x)
+})
