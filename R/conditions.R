@@ -34,7 +34,12 @@
   if (any(lens != 1L & lens != n)) {
     .jwc_abort("Inputs must have length one or a common length.", "jwcalendar_invalid_date")
   }
-  lapply(xs, function(x) rep(x, length.out = n))
+  lapply(xs, function(x) {
+    out <- rep(x, length.out = n)
+    if (inherits(x, "jwc_date")) out <- structure(as.integer(out), class = "jwc_date")
+    if (inherits(x, "Date")) out <- structure(as.numeric(out), class = "Date")
+    out
+  })
 }
 
 .jwc_is_date <- function(x) inherits(x, "jwc_date")
