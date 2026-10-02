@@ -18,7 +18,7 @@ gregorian_to_julian <- function(x) {
   doy <- doe - yoe * 365 + 1
   starts <- c(0,31,59,90,120,151,181,212,243,273,304,334)
   month <- findInterval(doy - 1, starts)
-  day <- doy - starts[month]
+  day <- doy - starts[month] - as.integer(year %% 4 == 0 & month > 2)
   year[is.na(rd)] <- month[is.na(rd)] <- day[is.na(rd)] <- NA_real_
   list(year = as.integer(year), month = as.integer(month), day = as.integer(day))
 }
