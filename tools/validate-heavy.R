@@ -24,6 +24,14 @@ for (y in 2000:2399) {
                stopifnot(all(as.character(as_jwc_date(as.character(dates))) == as.character(dates))))
   .cycle_check(y, "Gregorian-Julian round-trip", {
     julian <- gregorian_to_julian(dates)
+    invalid_julian <- which(is.na(julian$month) | julian$month < 1L | julian$month > 12L |
+                            is.na(julian$day) | julian$day < 1L | julian$day > 31L)
+    if (length(invalid_julian)) {
+      i <- invalid_julian[[1L]]
+      stop(sprintf("%s converted to invalid Julian fields %d-%d-%d",
+                   as.character(dates[[i]]), julian$year[[i]],
+                   julian$month[[i]], julian$day[[i]]), call. = FALSE)
+    }
     returned <- julian_to_gregorian(julian)
     mismatches <- which(as.character(returned) != as.character(dates))
     if (length(mismatches)) {
