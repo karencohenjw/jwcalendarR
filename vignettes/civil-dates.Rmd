@@ -9,6 +9,7 @@ vignette: >
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(jwcalendarR)
 ```
 
 `jwc_date` stores a whole civil day as an integer count from Gregorian
