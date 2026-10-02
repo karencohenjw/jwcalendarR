@@ -10,6 +10,10 @@ vignette: >
 Rules are small composable predicates. Compilation requires inclusive domain
 endpoints and returns selected civil dates.
 
+```{r setup, include=FALSE}
+library(jwcalendarR)
+```
+
 ```{r}
 rule <- rule_and(on_weekday(1:5), rule_not(on_month_day(1)))
 cal <- compile_calendar(rule, "2027-01-01", "2027-01-31")
