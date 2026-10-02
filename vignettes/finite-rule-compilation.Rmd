@@ -1,0 +1,23 @@
+---
+title: "Finite date-rule compilation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Finite date-rule compilation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Rules are small composable predicates. Compilation requires inclusive domain
+endpoints and returns selected civil dates.
+
+```{r}
+rule <- rule_and(on_weekday(1:5), rule_not(on_month_day(1)))
+cal <- compile_calendar(rule, "2027-01-01", "2027-01-31")
+calendar_count(cal)
+calendar_next(cal, "2027-01-01")
+calendar_contains(cal, c("2027-01-04", "2027-01-09"))
+```
+
+The compiler enumerates the finite domain, so cost grows with the number of
+days requested. It is intended for clear bounded validation tasks; the first
+release is not a high-performance recurrence engine or general SAT solver.

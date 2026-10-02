@@ -1,0 +1,22 @@
+---
+title: "Temporal validation and boundary audit"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Temporal validation and boundary audit}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Boundary flags and drift summaries make date changes reviewable. These
+functions compare civil-date values; they do not infer time zones or parse
+ambiguous timestamps.
+
+```{r}
+boundary_scan("2024-02-25", "2024-03-03")
+date_drift("2024-02-28", "2024-02-29")
+calendar_test_vectors(c(1900, 2000, 2024))
+explain_date("2024-12-31")
+```
+
+`tools/validate-heavy.R` is a separate, manually run 400-year deterministic
+validation script. Examples and ordinary package tests stay bounded and local.

@@ -1,0 +1,22 @@
+---
+title: "Calendar structure and equivalence"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Calendar structure and equivalence}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Natural-month grids describe structure without choosing a graphics system.
+Signatures include the month layout and week-start convention. A year
+signature is the ordered set of its twelve month signatures.
+
+```{r}
+calendar_grid(2027, 1, week_start = 1)
+calendar_equivalent(2015, 2026)
+calendar_cycle_summary()
+```
+
+The Gregorian leap-year and weekday pattern repeats every 400 years. Year
+equivalence here means identical month layouts under the selected week-start
+rule, not historical, holiday, fiscal, or jurisdictional equivalence.

@@ -1,0 +1,30 @@
+---
+title: "Civil dates and explicit coordinates"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Civil dates and explicit coordinates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+`jwc_date` stores a whole civil day as an integer count from Gregorian
+0001-01-01. It is not a timestamp and has no time zone. Inputs use strict
+`YYYY-MM-DD` syntax or explicit year, month, and day coordinates.
+
+```{r}
+x <- civil_date(2024, 2, 29)
+x
+absolute_day(x)
+ordinal_date(x)
+iso_week(x)
+gregorian_to_julian(x)
+julian_day_number(x)
+```
+
+Arithmetic has explicit invalid-date handling. For example, adding one month
+to January 31 errors by default; `invalid = "previous-valid"` clamps to the
+last day of February. No locale or timezone conversion is involved.
