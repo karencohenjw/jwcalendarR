@@ -16,11 +16,14 @@ gregorian_to_julian <- function(x) {
   yoe <- pmin(floor(doe / 365), 3)
   year <- era * 4 + yoe + 1
   doy <- doe - yoe * 365 + 1
-  starts <- c(0,31,59,90,120,151,181,212,243,273,304,334)
-  month <- findInterval(doy - 1, starts)
-  julian_leap_day <- year %% 4 == 0 & doy == 60
-  month[julian_leap_day] <- 2L
-  day <- doy - starts[month] - as.integer(year %% 4 == 0 & month > 2)
+  julian_leap <- year %% 4 == 0
+  month_starts <- c(1L,32L,60L,91L,121L,152L,182L,213L,244L,274L,305L,335L)
+  month <- rep.int(1L, length(doy))
+  for (m in 2:12) {
+    start <- month_starts[m] + as.integer(julian_leap & m >= 3L)
+    month[doy >= start] <- m
+  }
+  day <- doy - month_starts[month] - as.integer(julian_leap & month > 2L) + 1L
   year[is.na(rd)] <- month[is.na(rd)] <- day[is.na(rd)] <- NA_real_
   list(year = as.integer(year), month = as.integer(month), day = as.integer(day))
 }
