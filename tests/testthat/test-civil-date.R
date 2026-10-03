@@ -24,8 +24,9 @@ test_that("Gregorian arithmetic and ISO coordinates cross year boundaries", {
   iso <- iso_week(difficult)
   expect_equal(iso$year, c(2015L, 2015L, 2020L, 2020L, 2026L, 2026L, 2027L, 2027L))
   expect_equal(iso$week, c(53L, 53L, 53L, 53L, 53L, 53L, 1L, 52L))
-  expect_equal(iso_week("9999-12-31")$year, 10000L)
-  expect_equal(as.character(from_iso_week_date(10000, 1, 1)), "9999-12-31")
+  expect_equal(iso_week("9999-12-31"), list(year = 9999L, week = 52L, weekday = 5L))
+  expect_equal(as.character(from_iso_week_date(9999, 52, 5)), "9999-12-31")
+  expect_error(from_iso_week_date(10000, 1, 1), class = "jwcalendar_domain_error")
   expect_error(from_iso_week_date(10000, 1, 2), class = "jwcalendar_domain_error")
 })
 
@@ -55,7 +56,7 @@ test_that("finite rule compiler and set operations agree", {
   expect_equal(calendar_count(weekdays), 21L)
   firsts <- compile_calendar(on_month_day(1), "2024-01-01", "2024-03-31")
   expect_equal(as.character(firsts$dates), c("2024-01-01", "2024-02-01", "2024-03-01"))
-  expect_equal(calendar_count(calendar_intersection(weekdays, firsts)), 3L)
+  expect_equal(calendar_count(calendar_intersection(weekdays, firsts)), 1L)
   expect_true(calendar_contains(weekdays, "2024-02-29"))
   expect_false(calendar_contains(weekdays, "2024-02-25"))
   conflict <- compile_calendar(rule_and(on_weekday("monday"), on_weekday("tuesday")), "2024-01-01", "2024-12-31")
@@ -81,7 +82,8 @@ test_that("boundary and drift explanations expose date shifts", {
 test_that("deterministic sample round trips hold", {
   x <- as_jwc_date(c("0001-01-01", "0004-02-29", "1582-10-15", "1900-03-01", "2000-02-29", "9999-12-31"))
   expect_identical(as_jwc_date(as.character(x)), x)
-  expect_identical(add_days(add_days(x, 17), -17), x)
+  in_range <- x[-length(x)]
+  expect_identical(add_days(add_days(in_range, 17), -17), in_range)
   expect_identical(julian_to_gregorian(gregorian_to_julian(x)), x)
   expect_identical(from_ordinal_date(ordinal_date(x)$year, ordinal_date(x)$day), x)
   expect_identical(from_iso_week_date(iso_week_year(x), iso_week(x)$week, iso_weekday(x)), x)
