@@ -1,7 +1,7 @@
 citHeader("To cite jwcalendarR in publications:")
 
-citEntry(
-  entry = "Manual",
+bibentry(
+  bibtype = "Manual",
   title = "jwcalendarR: Structural Calendar Analysis and Finite Date-Rule Compilation",
   author = person("Karen", "Cohen"),
   year = "2026",
