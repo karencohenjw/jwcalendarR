@@ -6,7 +6,7 @@ print.jwc_compiled_calendar <- function(x, ...) {
   if (length(x$dates)) {
     shown <- x$dates[seq_len(min(6L, length(x$dates)))]
     cat("First dates:", paste(as.character(shown), collapse = ", "))
-    if (length(x$dates) > length(shown)) cat(", …")
+    if (length(x$dates) > length(shown)) cat(", \u2026")
     cat("\n")
   }
   invisible(x)
