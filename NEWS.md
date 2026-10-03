@@ -1,3 +1,8 @@
+# jwcalendarR 0.1.1
+
+* Removed README links to development-only files excluded from source archives.
+* Added a reference for the Gregorian and Julian calendar conversion methods.
+
 # jwcalendarR 0.1.0
 
 * Initial development release scaffold: strict civil-date representation,
