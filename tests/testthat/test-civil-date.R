@@ -35,6 +35,10 @@ test_that("Julian conversions round-trip and JDN reference is correct", {
   expect_equal(gregorian_to_julian(leap_transition),
                list(year = rep(2000L, 3), month = c(2L, 3L, 3L), day = c(29L, 1L, 2L)))
   expect_identical(julian_to_gregorian(gregorian_to_julian(leap_transition)), leap_transition)
+  april_transition <- civil_date(2000, 4, 13:15)
+  expect_equal(gregorian_to_julian(april_transition),
+               list(year = rep(2000L, 3), month = c(3L, 4L, 4L), day = c(31L, 1L, 2L)))
+  expect_identical(julian_to_gregorian(gregorian_to_julian(april_transition)), april_transition)
   expect_identical(julian_to_gregorian(gregorian_to_julian(x)), x)
 })
 
