@@ -1,7 +1,7 @@
 Package: jwcalendarR
 Type: Package
 Title: Structural Calendar Analysis and Finite Date-Rule Compilation
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: person("Karen", "Cohen",
     role = c("aut", "cre", "cph"), email = "jwcalendarcom@gmail.com")
 Description: Implements validated Gregorian civil-date operations and
@@ -10,7 +10,9 @@ Description: Implements validated Gregorian civil-date operations and
     declarative date rules can be compiled by enumerating a finite date
     domain. Reproducible validation utilities provide boundary diagnostics,
     date-pipeline audits, and test vectors. Civil dates are represented
-    without conversion through timestamps.
+    without conversion through timestamps. Gregorian and Julian calendar
+    conversion methods follow Reingold and Dershowitz (2018)
+    <doi:10.1017/9781107415058>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 3.6.0)
