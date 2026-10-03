@@ -8,12 +8,36 @@ candidate <- "jwcalendarR"
 key <- tolower(candidate)
 cran_url <- "https://cloud.r-project.org"
 archive_url <- "https://cran.r-project.org/src/contrib/Archive/"
+evidence_path <- "docs/NAME-AVAILABILITY.md"
+writeLines(c(
+  "# Package-name availability evidence",
+  "",
+  paste0("Checked on: **", format(Sys.Date(), "%Y-%m-%d"), "**."),
+  "",
+  "Status: **INCOMPLETE**. A registry query failed before all sources could be checked.",
+  "Re-run this check and do not interpret an incomplete report as a clear name."
+), evidence_path)
+
+read_url_with_retry <- function(url, label, attempts = 4L) {
+  last_error <- "empty response"
+  for (attempt in seq_len(attempts)) {
+    result <- tryCatch(
+      suppressWarnings(readLines(url, warn = FALSE)),
+      error = identity
+    )
+    if (!inherits(result, "error") && length(result)) return(result)
+    if (inherits(result, "error")) last_error <- conditionMessage(result)
+    if (attempt < attempts) Sys.sleep(2 ^ (attempt - 1L))
+  }
+  stop(sprintf("Could not read %s after %d attempts: %s",
+               label, attempts, last_error))
+}
 
 cran <- available.packages(repos = cran_url, filters = list())
 active_names <- rownames(cran)
 active_match <- active_names[tolower(active_names) == key]
 
-archive_lines <- readLines(archive_url, warn = FALSE)
+archive_lines <- read_url_with_retry(archive_url, "the CRAN Archive index")
 hrefs <- unlist(regmatches(
   archive_lines,
   gregexpr("href=[\"'][^\"']+[\"']", archive_lines, perl = TRUE)
@@ -60,7 +84,7 @@ report <- c(
   "This is an automated availability snapshot, not a reservation or guarantee of acceptance. Re-run immediately before any public release or CRAN submission. Any conflict must be resolved by choosing a different package name.",
   ""
 )
-writeLines(report, "docs/NAME-AVAILABILITY.md")
+writeLines(report, evidence_path)
 
 if (length(active_match) || length(archive_match) || length(bioc_match)) {
   stop("Package name conflict detected; do not publish or submit this package name.")
