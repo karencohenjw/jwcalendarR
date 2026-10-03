@@ -17,7 +17,8 @@ calendar_cycle_summary(start_year = 2000L, week_start = 1L)
 calendar_equivalent(year1, year2, week_start = 1L,
                                 structure = c("month-grid", "iso-week", "print-layout"))
 calendar_fingerprint(year, week_start = 1L)
-calendar_grid(year, month, week_start = 1L, rows = "natural", adjacent = FALSE, iso_week_labels = FALSE)
+calendar_grid(year, month, week_start = 1L, rows = "natural",
+              adjacent = FALSE, iso_week_labels = FALSE)
 calendar_signature(year, week_start = 1L)
 equivalent_years(year, range = NULL, week_start = 1L)
 month_signature(year, month, week_start = 1L)
