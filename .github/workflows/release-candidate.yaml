@@ -89,7 +89,7 @@ jobs:
           if [ "$result" -eq 0 ] && grep -Fxq 'Status: OK' "$check_log"; then
             echo 'R CMD check passed with Status: OK.'
           elif grep -Fxq 'Status: 1 NOTE' "$check_log" && \
-               grep -Fq '* checking CRAN incoming feasibility ... NOTE' "$check_log" && \
+               grep -Eq '^\* checking CRAN incoming feasibility .* NOTE$' "$check_log" && \
                grep -Fq 'New submission' "$check_log"; then
             echo 'R CMD check has only the routine NOTE for a new CRAN submission.'
           else
