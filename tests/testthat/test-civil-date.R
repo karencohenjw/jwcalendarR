@@ -14,6 +14,8 @@ test_that("Gregorian arithmetic and ISO coordinates cross year boundaries", {
   expect_equal(as.character(add_months("2024-01-31", 1, "previous-valid")), "2024-02-29")
   expect_equal(difference_days("2024-03-01", "2024-02-28"), 2L)
   expect_equal(iso_week("2021-01-01"), list(year = 2020L, week = 53L, weekday = 5L))
+  expect_equal(iso_week("2000-01-02"), list(year = 1999L, week = 52L, weekday = 7L))
+  expect_equal(as.character(from_iso_week_date(1999, 52, 6)), "2000-01-01")
   expect_equal(as.character(from_iso_week_date(2020, 53, 5)), "2021-01-01")
   expect_error(from_iso_week_date(2021, 53, 1), class = "jwcalendar_invalid_date")
   expect_equal(as.character(from_ordinal_date(2024, 60)), "2024-02-29")
