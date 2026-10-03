@@ -44,7 +44,8 @@ calendar_intersection(x, y)
 calendar_set_difference(x, y)
 calendar_symmetric_difference(x, y)
 calendar_test_vectors(years = c(1L, 4L, 100L, 400L, 1900L, 2000L, 2024L, 9999L),
-                                  cases = c("all", "leap", "month-end", "iso-week", "julian", "ordinal", "year-boundary"))
+                      cases = c("all", "leap", "month-end", "iso-week", "julian",
+                                "ordinal", "year-boundary"))
 calendar_union(...)
 date_drift(before, after)
 explain_conflict(x, y)
