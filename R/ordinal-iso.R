@@ -38,9 +38,10 @@ from_ordinal_date <- function(year, day) {
 iso_week <- function(x) {
   x <- .jwc_as_date(x); rd <- unclass(x); wd <- weekday(x)
   thu <- rd + (4L - wd)
-  iso_y <- .rd_to_gregorian(rd)$year
-  beyond <- !is.na(thu) & thu > 3652059L
-  iso_y[beyond] <- 10000L
+  safe_thu <- pmin(pmax(thu, 1L), 3652059L)
+  iso_y <- .rd_to_gregorian(safe_thu)$year
+  iso_y[!is.na(thu) & thu < 1L] <- 0L
+  iso_y[!is.na(thu) & thu > 3652059L] <- 10000L
   iso_y[is.na(rd)] <- NA_integer_
   week1 <- .jwc_week1_start(iso_y)
   list(year = iso_y, week = as.integer((rd - week1) %/% 7L + 1L), weekday = wd)
