@@ -24,11 +24,9 @@ calendar_count(workdays)
 explain_date("2027-01-01")
 ```
 
-See [the ecosystem gap note](docs/ECOSYSTEM-GAP.md) for scope and comparison,
-and the vignettes for date representation, rule compilation, structure, and
-validation. This package is under development; see
-[release readiness](docs/RELEASE-READINESS.md) for checks that remain before
-any CRAN submission.
+The package vignettes document civil-date representation, rule compilation,
+calendar structure, and validation. Development-only comparison and release
+notes are maintained outside the package source archive.
 
 ## License
 
